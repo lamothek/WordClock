@@ -26,61 +26,78 @@ void setup()
 void loop()
 {
 	int hour = EncodedHour();
+ Serial.println(hour);
   int minute = EncodedMinute();
+Serial.println(minute);
+  unsigned int GPOA0 = 0b00000011;
+  unsigned int GPOB0 = 0b00000000;
+  unsigned int GPOA1 = 0b00000000;
+  unsigned int GPOB1 = 0b00000000;
 
-  int GPOA0 [8] = {0,0,0,0,0,0,1,1};
-  int GPOB0 [8] = {0,0,0,0,0,0,0,0};
-  int GPOA1 [8] = {0,0,0,0,0,0,0,0};
+  //Increment to next hour if minutes are past half an hour
+  if(minute > 5)
+  {
+    //roll over if at highest value
+    if(hour == 120)
+    {
+      hour = 10;
+    }
+    
+    else
+    {
+      hour = hour + 10;
+    }
+    
+  }
 
   //Swtich-Case for setting bits corresponding to each hour
   switch (hour)
   {
     case 10:
-      GPOA1[1] = 1;
       break;
 
     case 20:
-      GPOB0[4] = 1;
+     // GPOB0[4] = 1;
       break;
 
     case 30:
-      GPOB0[3] = 1;
+      //GPOB0[3] = 1;
       break;
 
     case 40:
-      GPOB0[2] = 1;
+      //GPOB0[2] = 1;
       break;
 
     case 50:
-      GPOB0[1] = 1;
+     // GPOB0[1] = 1;
       break;
 
     case 60:
-      GPOB0[0] = 1;
+     // GPOB0[0] = 1;
       break;
 
     case 70:
-      GPOA1[7] = 1;
+    //  GPOA1[7] = 1;
       break;
 
     case 80:
-      GPOA1[6] = 1;
+      //GPOA1[6] = 1;
       break;;
 
     case 90:
-      GPOA1[5] = 1;
+      //GPOA1[5] = 1;
       break;;
 
     case 100:
-      GPOA1[4] = 1;
+      //GPOA1[4] = 1;
       break;
 
     case 110:
-      GPOA1[3] = 1;
+      //GPOA1[3] = 1;
       break;
 
     case 120:
-      GPOA1[2] = 1;
+      //GPOA1[2] = 1;
       break;
   }
 
@@ -88,76 +105,57 @@ void loop()
   switch (minute)
   {
     case 0:
-      GPOA1[3] = 1; //Oclock
+      //GPOA1[3] = 1; //Oclock
       break;
 
     case 1:
-      GPOA1[2] = 1; //Five
-      GPOA1[4] = 1; //Past
+     //GPOA1[2] = 1; //Five
+     //GPOA1[4] = 1; //Past
       break;
 
     case 2:
-      GPOA0[1] = 1; //Ten
-      GPOA1[4] = 1; //Past
+      //GPOA0[1] = 1; //Ten
+      //GPOA1[4] = 1; //Past
       break;
 
     case 3:
-      GPOA1[0] = 1; //Quarter
-      GPOA1[4] = 1; //Past
+      //GPOA1[0] = 1; //Quarter
+      //GPOA1[4] = 1; //Past
       break;
 
     case 4:
-      GPOB0[7] = 1; //Twenty
-      GPOA1[4] = 1; //Past
+      //GPOB0[7] = 1; //Twenty
+      //GPOA1[4] = 1; //Past
       break;
 
     case 5:
-      GPOB0[6] = 1; //Half
-      GPOA1[4] = 1; //Past
+      //GPOB0[6] = 1; //Half
+      //GPOA1[4] = 1; //Past
       break;
 
     case 6:
-      GPOB0[7] = 1; //Twenty
-      GPOB0[5] = 1; //Minutes
-      GPOA0[5] = 1; //To
+      //GPOB0[7] = 1; //Twenty
+      //GPOB0[5] = 1; //Minutes
+      //GPOA0[5] = 1; //To
       break;
 
     case 7:
-      GPOA0[0] = 1; //Quarter
-      GPOA0[5] = 1; //To
+      //GPOA0[0] = 1; //Quarter
+      //GPOA0[5] = 1; //To
       break;
 
     case 8:
-      GPOA0[1] = 1; //Ten
-      GPOB0[5] = 1; //Minutes
-      GPOA0[5] = 1; //To
+     // GPOA0[1] = 1; //Ten
+     // GPOB0[5] = 1; //Minutes
+//GPOA0[5] = 1; //To
       break;
 
     case 9:
-      GPOA0[2] = 1; //Five
-      GPOB0[5] = 1; //Minutes
-      GPOA0[5] = 1; //To
+     // GPOA0[2] = 1; //Five
+     // GPOB0[5] = 1; //Minutes
+     // GPOA0[5] = 1; //To
       break;
   }
-  
- for(int i = 7; i > 0; i--)
-{
-  Serial.print(GPOA0[i]);
-}
-Serial.print("|");
-
- for(int i = 7; i > 0; i--)
-{
-  Serial.print(GPOB0[i]);
-}
-Serial.print("|");
- for(int i = 7; i > 0; i--)
-{
-  Serial.print(GPOA1[i]);
-}
- Serial.println();
-delay(5000);
-
 
   Wire.beginTransmission(0x20);
   Wire.write(0x12); // GPIOA
@@ -168,8 +166,6 @@ delay(5000);
   Wire.write(0x13); // GPIOB
   Wire.write(0b11111111); // port B
   Wire.endTransmission();
-
-
 }
 
 //------------------------------------------------------------------
@@ -179,7 +175,7 @@ delay(5000);
 int EncodedHour()
 {
   tmElements_t tm;
-  int EncodedHours;
+  int EncodedHours = 0;
 
   //Reding and setting hour
   if (RTC.read(tm)) 
