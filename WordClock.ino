@@ -48,18 +48,14 @@ void setup()
 
 void loop()
 {
-  PrintTime(); //Prints current time from RTC
-   
+  
+  PrintTime();                     //Prints current time from RTC
+  Counter = OutputEnable(Counter); //Reads push button and toggles output if Counter has changed
+
   //Call functions to return encoded time values for hours and minutes
 	int hour = EncodedHour();
   int minute = EncodedMinute();
 
-Counter = OutputEnable(Counter);
- 
-
-
-  
-  
   //Increment to next hour if minutes are past half an hour
   if(minute > 5)
   {
@@ -220,9 +216,12 @@ Counter = OutputEnable(Counter);
   delay(1000);
 }
 
+//------------------------------------------------------------------
+//Function to read RTC and return an integer value for each hour
+//Negative values indicate some sort of failure
+//------------------------------------------------------------------
 int OutputEnable(int Counter)
 {
-  
   int val = digitalRead(ButtonRead);     // read the input pin
 
   //Increment counter if push button is high
@@ -231,14 +230,13 @@ int OutputEnable(int Counter)
     Counter ++;
   }
 
-  Serial.println(Counter);
-
   //Turn Relay Control HIGH if counter is even
   if(Counter % 2 == 0)
   {
     digitalWrite(RelayControl, HIGH); 
   }
 
+  //Turn Relay Control LOW if counter is odd
   else
   {
     digitalWrite(RelayControl, LOW);
